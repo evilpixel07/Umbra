@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Umbra — Encrypted Notes</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="notes-page">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="app">
+      
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">U</div>
+          <div>
+            <div class="app-title">Umbra</div>
+            <div class="small muted">Encrypted notes — client-side</div>
+          </div>
+        </div>
+
+        <div class="top-actions" role="search">
+          <div class="search-wrap">
+            <input id="globalSearch" class="search" placeholder="Search by title or tag..." aria-label="Search notes">
+            <button id="createBtn" class="create" title="Create new note">Create</button>
+          </div>
+          <div style="width:12px"></div>
+          <button id="logoutBtn" class="btn ghost" title="Logout">Logout</button>
+        </div>
+      </header>
+
+      <main class="left">
+        <section class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong style="font-size:17px">Editor</strong>
+              <div class="small muted">Write, encrypt and save — passphrase required to decrypt</div>
+            </div>
+            <div class="chip-count" id="notesCount">0</div>
+          </div>
+
+          <div class="field">
+            <label for="title">Title</label>
+            <input id="title" type="text" placeholder="Note title" />
+          </div>
+
+          <div class="field">
+            <label for="tags">Tags (comma separated)</label>
+            <input id="tags" type="text" placeholder="e.g. ideas,project,personal" />
+          </div>
+
+          <div class="field">
+            <label for="body">Note</label>
+            <textarea id="body" placeholder="Write your private note here..."></textarea>
+          </div>
+
+        <div class="field">
+            <label for="pass">Passphrase</label>
+            <div class="password-wrapper"> <input id="passphrase" type="password" placeholder="Passphrase (not stored)" />
+                <button type="button" id="togglePass" class="password-toggle" aria-label="Toggle passphrase visibility">
+                    <span class="eye-icon">👁️</span>
+                </button>
+            </div>
+        <div class="small muted">Use same passphrase to decrypt. Passphrase is never saved.</div>
+    </div>
+
+          <div class="controls" role="toolbar" aria-label="Editor actions">
+            <button id="saveBtn" class="btn primary">Encrypt & Save</button>
+            <button id="decryptLatest" class="btn ghost">Decrypt Latest</button>
+            <button id="clearBtn" class="btn ghost">Clear</button>
+            <button id="exportAll" class="btn ghost">Export All</button>
+            <button id="importAll" class="btn ghost">Import</button>
+            <input id="importFile" style="display:none" type="file" accept="application/json" />
+          </div>
+
+          <div style="margin-top:12px" class="small muted">Tip: Use a strong passphrase. If you lose it, encrypted notes cannot be recovered.</div>
+        </section>
+      </main>
+
+      <!-- RIGHT: Notes list -->
+      <aside class="right">
+        <section class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong>Notes</strong>
+              <div class="small muted">Click a note to decrypt it (passphrase required)</div>
+            </div>
+            <div class="small muted" id="lastSaved">—</div>
+          </div>
+
+          <div class="list-actions">
+            <input id="filterInput" type="text" placeholder="Filter by tag..." style="padding:8px;border-radius:8px;border:1px solid rgba(255, 255, 255, 0.403);background:transparent;color:inherit" />
+            <div style="flex:1"></div>
+            <div class="small muted">Saved notes</div>
+          </div>
+
+          <div class="tags-filter" id="activeTags" aria-hidden="false"></div>
+
+          <div id="notesContainer" style="margin-top:10px"></div>
+
+          <div style="margin-top:10px" class="small muted">Export individual note for backup. Import merges with existing.</div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="small-note">All crypto runs locally using Web Crypto API. Umbra does not send your notes anywhere.</footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  
+</body>
+</html>
