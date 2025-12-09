@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Umbra — Write Note</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="notes-page">
+  <div class="app" style="grid-template-columns: 1fr; max-width: 800px;">
+      
+      <header class="topbar">
+        <div class="brand">
+            <div class="logo">U</div>
+            <span class="app-title">Umbra Editor</span>
+        </div>
+        <div class="top-actions">
+           <a href="notes.html" class="btn ghost">Back to Dashboard</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="card">
+          <div style="margin-bottom: 20px;">
+              <strong style="font-size:18px; color: var(--text-main);">New Encrypted Note</strong>
+              <div class="small muted">Content is encrypted before saving. Server sees only random noise.</div>
+          </div>
+
+          <div class="field">
+            <label for="title">Title</label>
+            <input id="title" type="text" placeholder="Note title" />
+          </div>
+
+          <div class="field">
+            <label for="tags">Tags</label>
+            <input id="tags" type="text" placeholder="e.g. ideas, project, personal" />
+          </div>
+
+          <div class="field">
+            <label for="body">Thinking Space</label>
+            <textarea id="body" placeholder="Write your private note here..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="passphrase">Encryption Passphrase</label>
+            <div class="password-wrapper">
+                <input id="passphrase" type="password" placeholder="Enter a strong passphrase" />
+                <button type="button" id="togglePass" class="password-toggle" aria-label="Toggle passphrase visibility">
+                    <span class="eye-icon">👁️</span>
+                </button>
+            </div>
+            <div class="small muted" style="margin-top:6px; color: var(--accent);">
+                IMPORTANT: You must remember this passphrase to decrypt the note later. We cannot recover it.
+            </div>
+          </div>
+
+           <div class="field">
+            <label for="shareEmail">Share Access (Optional)</label>
+            <input id="shareEmail" type="text" placeholder="e.g. alice@test.com, bob@test.com" />
+            <div class="small muted" style="margin-top:6px">Separate multiple emails with commas. They will need the passphrase.</div>
+          </div>
+
+          <div class="controls">
+            <button id="saveBtn" class="btn primary">Encrypt & Save</button>
+            <a href="notes.html" class="btn ghost">Cancel</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module" src="js/editor.js"></script>
+</body>
+</html>
