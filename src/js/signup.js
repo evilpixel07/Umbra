@@ -5,7 +5,7 @@ const signupForm = document.querySelector('form');
 
 if (signupForm) {
   signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Stop page reload
+    e.preventDefault(); 
 
     const username = document.getElementById('username').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -19,7 +19,7 @@ if (signupForm) {
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Update display name if provided
+      // Updating display name if user provided username
       if (username) {
         await updateProfile(userCred.user, { displayName: username });
       }

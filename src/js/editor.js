@@ -6,15 +6,15 @@ import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/fir
 const titleInput = document.getElementById('title');
 const tagsInput = document.getElementById('tags');
 const bodyInput = document.getElementById('body');
-const passInput = document.getElementById('passphrase');
+const passphraseInput = document.getElementById('passphrase');
 const shareInput = document.getElementById('shareEmail');
-const saveBtn = document.getElementById('saveBtn');
+const saveButton = document.getElementById('saveBtn');
 const toast = document.getElementById('toast');
 const togglePassBtn = document.getElementById('togglePass');
 
 let currentUser = null;
 
-// Auth Listener
+// Authentication 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -23,26 +23,26 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Toggle Password Visibility
+// eye button for password visibility
 togglePassBtn.addEventListener('click', () => {
-    const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passInput.setAttribute('type', type);
+    const type = passphraseInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passphraseInput.setAttribute('type', type);
 });
 
-// Utils
+
 function showToast(msg, type = 'info') {
     toast.textContent = msg;
     toast.className = `toast show ${type}`;
     setTimeout(() => toast.className = 'toast', 3000);
 }
 
-// --- Crypto Functions ---
+// part of encrytption using crypto
 
 async function deriveKey(passphrase, salt) {
-    const enc = new TextEncoder();
+    const textEncoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
         "raw",
-        enc.encode(passphrase),
+        textEncoder.encode(passphrase),
         { name: "PBKDF2" },
         false,
         ["deriveKey"]
@@ -57,45 +57,45 @@ async function deriveKey(passphrase, salt) {
         },
         keyMaterial,
         { name: "AES-GCM", length: 256 },
-        false, // Key not exportable
+        false, 
         ["encrypt", "decrypt"]
     );
 }
 
 async function encryptData(text, passphrase) {
-    const enc = new TextEncoder();
+    const textEncoder = new TextEncoder();
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const initializationVector = crypto.getRandomValues(new Uint8Array(12));
 
     const key = await deriveKey(passphrase, salt);
 
     const ciphertext = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: iv },
+        { name: "AES-GCM", iv: initializationVector },
         key,
-        enc.encode(text)
+        textEncoder.encode(text)
     );
 
     // Convert buffers to base64 for storage
     const saltB64 = btoa(String.fromCharCode(...salt));
-    const ivB64 = btoa(String.fromCharCode(...iv));
+    const initializationVectorB64 = btoa(String.fromCharCode(...initializationVector));
     const dataB64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
 
     return {
         ciphertext: dataB64,
         salt: saltB64,
-        iv: ivB64
+        iv: initializationVectorB64
     };
 }
 
 // --- Save Logic ---
 
-saveBtn.addEventListener('click', async () => {
+saveButton.addEventListener('click', async () => {
     if (!currentUser) return;
 
     const title = titleInput.value.trim();
     const tags = tagsInput.value.trim();
     const body = bodyInput.value;
-    const passphrase = passInput.value;
+    const passphrase = passphraseInput.value;
     const shareEmail = shareInput.value.trim();
 
     if (!title || !body || !passphrase) {
@@ -103,20 +103,16 @@ saveBtn.addEventListener('click', async () => {
         return;
     }
 
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Encrypting...";
+    saveButton.disabled = true;
+    saveButton.textContent = "Encrypting...";
 
     try {
-        // 1. Encrypt the body
+        //  Encrypting only the body part
         const encryptedData = await encryptData(body, passphrase);
 
-        // 2. Prepare Firestore Document
-        // Note: Title and Tags are stored in PLAIN TEXT to allow searching/filtering.
-        // Only the body is encrypted. 
-        // If user wants title encrypted, we'd need a separate 'display title'.
-        // For this version, we assume Title is not sensitive or user uses code names.
+        
 
-        const docData = {
+        const noteDocumentData = {
             ownerUid: currentUser.uid,
             ownerEmail: currentUser.email,
             title: title,
@@ -127,13 +123,13 @@ saveBtn.addEventListener('click', async () => {
             salt: encryptedData.salt,
             iv: encryptedData.iv,
 
-            // Sharing
+            // for sharing the body
             sharedWith: shareEmail ? shareEmail.split(',').map(e => e.trim()).filter(Boolean) : [],
 
             createdAt: serverTimestamp()
         };
 
-        await addDoc(collection(db, "notes"), docData);
+        await addDoc(collection(db, "notes"), noteDocumentData);
 
         showToast("Note encrypted & saved!", "success");
         setTimeout(() => {
@@ -143,7 +139,7 @@ saveBtn.addEventListener('click', async () => {
     } catch (err) {
         console.error(err);
         showToast("Error saving note: " + err.message, "error");
-        saveBtn.disabled = false;
-        saveBtn.textContent = "Encrypt & Save";
+        saveButton.disabled = false;
+        saveButton.textContent = "Encrypt & Save";
     }
 });

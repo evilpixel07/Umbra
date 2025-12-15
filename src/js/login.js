@@ -1,5 +1,5 @@
 
-// src/js/login.js
+
 import { auth } from "./config.js";
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 

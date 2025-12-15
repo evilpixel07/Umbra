@@ -4,8 +4,8 @@ import { collection, query, where, getDocs, orderBy, updateDoc, doc, arrayUnion 
 
 // DOM Elements
 const notesContainer = document.getElementById('notesContainer');
-const createBtn = document.getElementById('createBtn');
-const logoutBtn = document.getElementById('logoutBtn');
+const createNewNoteButton = document.getElementById('createBtn');
+const logoutButton = document.getElementById('logoutBtn');
 const globalSearch = document.getElementById('globalSearch');
 const notesCount = document.getElementById('notesCount');
 
@@ -30,9 +30,9 @@ const confirmShare = document.getElementById('confirmShare');
 const toast = document.getElementById('toast');
 
 let currentUser = null;
-let currentNote = null; // The note object currently being acted on
+let currentNote = null; 
 
-// --- Auth & Init ---
+// --- Authentication and Initialization ---
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -43,40 +43,35 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-createBtn.addEventListener('click', () => {
+createNewNoteButton.addEventListener('click', () => {
     window.location.href = "editor.html";
 });
 
-logoutBtn.addEventListener('click', async () => {
+logoutButton.addEventListener('click', async () => {
     await signOut(auth);
     window.location.href = "login.html";
 });
 
-// --- Notes Loading ---
+// --- Loading all the notes  ---
 
 async function loadNotes() {
     notesContainer.innerHTML = '<div class="loading-state">Syncing encrypted vault...</div>';
 
     try {
-        // Fetch notes owned by user OR shared with user
-        // Firestore OR queries can be tricky, doing two queries and merging for simplicity in this prototype
-        // Note: Real app would use a more complex query or denormalized index
+        const myNotesQuery = query(collection(db, "notes"), where("ownerUid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+        const sharedNotesQuery = query(collection(db, "notes"), where("sharedWith", "array-contains", currentUser.email), orderBy("createdAt", "desc"));
 
-        const myNotesQ = query(collection(db, "notes"), where("ownerUid", "==", currentUser.uid), orderBy("createdAt", "desc"));
-        const sharedNotesQ = query(collection(db, "notes"), where("sharedWith", "array-contains", currentUser.email), orderBy("createdAt", "desc"));
-
-        const [mySnap, sharedSnap] = await Promise.all([getDocs(myNotesQ), getDocs(sharedNotesQ)]);
+        const [myNotesSnapshot, sharedNotesSnapshot] = await Promise.all([getDocs(myNotesQuery), getDocs(sharedNotesQuery)]);
 
         const notes = [];
-        mySnap.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: true }));
-        sharedSnap.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: false }));
+        myNotesSnapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: true }));
+        sharedNotesSnapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: false }));
 
-        // Sort combined (since we did two queries, they might be interleaved time-wise)
         notes.sort((a, b) => b.createdAt - a.createdAt);
 
         renderNotes(notes);
         notesCount.textContent = notes.length;
-        renderTagCloud(notes); // New feature
+        renderTagCloud(notes); 
 
     } catch (err) {
         console.error(err);
@@ -151,7 +146,7 @@ function renderNotes(notes) {
     });
 }
 
-// --- Search ---
+// --- Searching for any Note ---
 
 globalSearch.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
@@ -197,13 +192,13 @@ function openDecryptModal(note) {
 }
 
 confirmDecrypt.addEventListener('click', async () => {
-    const pass = decryptPass.value;
-    if (!pass) return;
+    const decryptionPassword = decryptPass.value;
+    if (!decryptionPassword) return;
 
     confirmDecrypt.textContent = "Decrypting...";
 
     try {
-        const plainText = await decryptData(currentNote, pass);
+        const plainText = await decryptData(currentNote, decryptionPassword);
         closeModal(decryptModal);
         openViewModal(currentNote, plainText);
     } catch (err) {
@@ -257,12 +252,12 @@ confirmShare.addEventListener('click', async () => {
 // --- Crypto Decryption (Mirror of Editor) ---
 
 async function decryptData(noteData, passphrase) {
-    const enc = new TextEncoder();
+    const textEncoder = new TextEncoder();
 
     // 1. Import Key (PBKDF2)
     const keyMaterial = await crypto.subtle.importKey(
         "raw",
-        enc.encode(passphrase),
+        textEncoder.encode(passphrase),
         { name: "PBKDF2" },
         false,
         ["deriveKey"]
@@ -294,8 +289,8 @@ async function decryptData(noteData, passphrase) {
         ciphertext
     );
 
-    const dec = new TextDecoder();
-    return dec.decode(decrypted);
+    const textDecoder = new TextDecoder();
+    return textDecoder.decode(decrypted);
 }
 
 function showToast(msg, type = 'info') {
