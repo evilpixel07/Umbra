@@ -9,17 +9,32 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="signup-page">
-  <div class="container">
-    <h2>Create a New Account</h2>
-    <form>
-      <input type="text" placeholder="Username"  id="username" required/>
-      <input type="email" placeholder="Email" id="email" required/>
-      <input type="password" placeholder="Password"  id="password" required/>
-      <input type="password" placeholder="Confirm Password"  id="confirm" required/>
-      
-      <button type="submit" id="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="login.html">Login</a></p>
+  <div class="split-layout">
+    <div class="left-panel"></div>
+    
+    <div class="right-panel">
+      <div class="container">
+        
+        <h2>Create a New Account</h2>
+        <form>
+          <div class="input-box">
+             <input type="text" placeholder="Username"  id="username" required/>
+          </div>
+          <div class="input-box">
+            <input type="email" placeholder="Email" id="email" required/>
+          </div>
+          <div class="input-box">
+            <input type="password" placeholder="Password"  id="password" required/>
+          </div>
+          <div class="input-box">
+            <input type="password" placeholder="Confirm Password"  id="confirm" required/>
+          </div>
+          
+          <button type="submit" id="submit" class="btn ripple">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+      </div>
+    </div>
   </div>
 
  

@@ -7,31 +7,71 @@
 
   `
   <link rel="stylesheet" href="css/styles.css" />
+  
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // Initialize EmailJS with Public Key
+      emailjs.init({
+        publicKey: "ZZWBa0FSFYsiXo1cL",
+      });
+    })();
+  </script>
 </head>
 <body class="login-page">
-  <div class="bg-decor" aria-hidden="true"></div>
+  <div class="split-layout">
+    <div class="left-panel">
+      <div class="brand-overlay">
+      </div>
+    </div>
+    
+    <div class="right-panel">
+      <div class="container">
+        <div class="glass-box" id="card" role="form" aria-labelledby="loginTitle">
+          <h2 id="loginTitle">Login into your Account</h2>
 
-  <div class="container">
-    <div class="glass-box" id="card" role="form" aria-labelledby="loginTitle">
-      <h2 id="loginTitle">Login into your Account</h2>
+          <form id="loginForm" novalidate>
+            <div class="input-box">
+              <input id="email" type="email" required autocomplete="username" />
+              <label for="email">Email address</label>
+              <span class="icon" aria-hidden="true">✉️</span>
+            </div>
 
-      <form id="loginForm" novalidate>
-        <div class="input-box">
-          <input id="email" type="email" required autocomplete="username" />
-          <label for="email">Email address</label>
-          <span class="icon" aria-hidden="true">✉️</span>
+            <div class="input-box">
+              <input id="password" type="password" required autocomplete="current-password" minlength="6" />
+              <label for="password">Password</label>
+              <span class="icon" aria-hidden="true">🔒</span>
+            </div>
+
+            <button type="submit" class="btn ripple">Sign In</button>
+
+            <p class="register">Don't have an account? <a href="signup.html">Signup</a></p>
+          </form>
+
+          <div id="otp-section" class="hidden">
+            <div id="pre-otp">
+              <p style="margin-bottom: 20px; color: rgba(255,255,255,0.8);">Verify it's you to continue.</p>
+              <button id="generate-otp" class="btn ripple secondary">Generate OTP</button>
+            </div>
+
+            <div id="otp-entry" class="hidden">
+              <div class="input-box">
+                <input id="otp-input" type="text" maxlength="6" inputmode="numeric" placeholder=" " required />
+                <label for="otp-input">Enter 6-digit Code</label>
+                <span class="icon">🔑</span>
+              </div>
+              <p id="timer" style="color: #64748b; font-size: 14px; margin-bottom: 10px;">Expires in 3:00</p>
+              
+              <button id="verify-otp" class="btn ripple">Verify & Login</button>
+              
+              <p style="margin-top: 15px; font-size: 13px;">
+                Didn't get it? <a href="#" id="resend-otp" style="color: #06b6d4;">Resend OTP</a>
+              </p>
+            </div>
+          </div>
         </div>
-
-        <div class="input-box">
-          <input id="password" type="password" required autocomplete="current-password" minlength="6" />
-          <label for="password">Password</label>
-          <span class="icon" aria-hidden="true">🔒</span>
-        </div>
-
-        <button type="submit" class="btn ripple">Sign In</button>
-
-        <p class="register">Don't have an account? <a href="signup.html">Signup</a></p>
-      </form>
+      </div>
     </div>
   </div>
 
