@@ -5,8 +5,8 @@ import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/f
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
     const otpSection = document.getElementById("otp-section");
-    const preOtpDiv = document.getElementById("pre-otp");
-    const otpEntryDiv = document.getElementById("otp-entry");
+    const preOtp = document.getElementById("pre-otp");
+    const otpEntry = document.getElementById("otp-entry");
     const generateBtn = document.getElementById("generate-otp");
     const verifyBtn = document.getElementById("verify-otp");
     const resendLink = document.getElementById("resend-otp");
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     generateBtn.addEventListener("click", async () => {
         if (!currentUser) return;
         generateBtn.disabled = true;
-        generateBtn.textContent = "Sending...";
+        generateBtn.textContent = "Sending otp for verification...";
 
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + 3 * 60 * 1000;
@@ -56,10 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             console.log("OTP saved to Firestore successfully.");
 
-            
+
             console.log("Sending email via EmailJS...");
 
-            // Fallback to input field if currentUser.email is somehow missing
             const emailToSend = currentUser.email || document.getElementById("email").value.trim();
             console.log("Email to send to:", emailToSend);
 
@@ -75,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log("Template Params:", templateParams);
 
-            
+
             if (typeof emailjs === 'undefined') {
                 throw new Error("EmailJS SDK not loaded.");
             }
@@ -83,13 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
             await emailjs.send('evil_pixel_07', 'template_bbtzb5y', templateParams);
             console.log("OTP Email sent successfully to:", currentUser.email);
 
-            preOtpDiv.classList.add("hidden");
-            otpEntryDiv.classList.remove("hidden");
+            preOtp.classList.add("hidden");
+            otpEntry.classList.remove("hidden");
             startTimer(expiresAt);
 
         } catch (err) {
             console.error("OTP Error:", err);
-            
+
             let errorMessage = err.message || "Unknown error";
             if (err.text) errorMessage += " (" + err.text + ")";
 
@@ -169,8 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resetOTPView() {
         clearInterval(timerInterval);
-        otpEntryDiv.classList.add("hidden");
-        preOtpDiv.classList.remove("hidden");
+        otpEntry.classList.add("hidden");
+        preOtp.classList.remove("hidden");
         generateBtn.disabled = false;
         generateBtn.textContent = "Generate OTP";
         verifyBtn.disabled = false;

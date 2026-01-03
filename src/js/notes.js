@@ -1,20 +1,20 @@
 import { auth, db } from "./config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { collection, query, where, getDocs, orderBy, updateDoc, doc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy, updateDoc, doc, arrayUnion, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-// DOM Elements
+
 const notesContainer = document.getElementById('notesContainer');
 const createNewNoteButton = document.getElementById('createBtn');
 const logoutButton = document.getElementById('logoutBtn');
 const globalSearch = document.getElementById('globalSearch');
 const notesCount = document.getElementById('notesCount');
 
-// Modals
+
 const decryptModal = document.getElementById('decryptModal');
 const viewModal = document.getElementById('viewModal');
 const shareModal = document.getElementById('shareModal');
 
-// Modal Elements
+
 const decryptPass = document.getElementById('decryptPass');
 const confirmDecrypt = document.getElementById('confirmDecrypt');
 const decryptNoteTitle = document.getElementById('decryptNoteTitle');
@@ -25,12 +25,22 @@ const viewTags = document.getElementById('viewTags');
 const shareBtnTrigger = document.getElementById('shareBtnTrigger');
 
 const shareEmailInput = document.getElementById('shareEmailInput');
+const sharePermission = document.getElementById('sharePermission');
 const confirmShare = document.getElementById('confirmShare');
+const editBtn = document.getElementById('editBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+
+const confirmModal = document.getElementById('confirmModal');
+const confirmTitle = document.getElementById('confirmTitle');
+const confirmMessage = document.getElementById('confirmMessage');
+const confirmActionBtn = document.getElementById('confirmActionBtn');
+const cancelActionBtn = document.getElementById('cancelActionBtn');
 
 const toast = document.getElementById('toast');
 
 let currentUser = null;
-let currentNote = null; 
+let currentNote = null;
+
 
 // --- Authentication and Initialization ---
 
@@ -55,7 +65,7 @@ logoutButton.addEventListener('click', async () => {
 // --- Loading all the notes  ---
 
 async function loadNotes() {
-    notesContainer.innerHTML = '<div class="loading-state">Syncing encrypted vault...</div>';
+    notesContainer.innerHTML = '<div class="loading-state">Loading the notes...</div>';
 
     try {
         const myNotesQuery = query(collection(db, "notes"), where("ownerUid", "==", currentUser.uid), orderBy("createdAt", "desc"));
@@ -64,14 +74,18 @@ async function loadNotes() {
         const [myNotesSnapshot, sharedNotesSnapshot] = await Promise.all([getDocs(myNotesQuery), getDocs(sharedNotesQuery)]);
 
         const notes = [];
-        myNotesSnapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: true }));
-        sharedNotesSnapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: false }));
+        myNotesSnapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data(), isOwner: true, permission: 'read-write' }));
+        sharedNotesSnapshot.forEach(doc => {
+            const data = doc.data();
+            const permission = data.sharedPermissions?.[currentUser.email] || 'read';
+            notes.push({ id: doc.id, ...data, isOwner: false, permission: permission });
+        });
 
         notes.sort((a, b) => b.createdAt - a.createdAt);
 
         renderNotes(notes);
         notesCount.textContent = notes.length;
-        renderTagCloud(notes); 
+        renderTagCloud(notes);
 
     } catch (err) {
         console.error(err);
@@ -126,8 +140,7 @@ function renderNotes(notes) {
     notes.forEach(note => {
         const card = document.createElement('div');
         card.className = 'note-card dashboard-card';
-
-        const tagHtml = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+        card.dataset.id = note.id;
 
         card.innerHTML = `
             <div class="note-header">
@@ -141,20 +154,42 @@ function renderNotes(notes) {
             </div>
         `;
 
-        card.addEventListener('click', () => openDecryptModal(note));
+        card.addEventListener('click', () => {
+            openDecryptModal(note);
+        });
+
         notesContainer.appendChild(card);
     });
 }
 
-// --- Searching for any Note ---
+
+
+// --- Generic Confirmation Modal ---
+function showConfirmModal(title, message, confirmText, cancelText, onConfirm, onCancel) {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmActionBtn.textContent = confirmText;
+    cancelActionBtn.textContent = cancelText;
+
+    confirmActionBtn.onclick = onConfirm;
+    cancelActionBtn.onclick = () => {
+        closeModal(confirmModal);
+        if (onCancel) onCancel();
+    };
+
+    openModal(confirmModal);
+}
+
+
+
+
+// -------------- Searching for any Note fro the search bar -----------
 
 globalSearch.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     const cards = document.querySelectorAll('.note-card');
 
     cards.forEach(card => {
-        const title = card.querySelector('.note-title').textContent.toLowerCase();
-        // Tags are also in the text content
         if (card.textContent.toLowerCase().includes(term)) {
             card.style.display = "block";
         } else {
@@ -163,7 +198,7 @@ globalSearch.addEventListener('input', (e) => {
     });
 });
 
-// --- Modal Logic ---
+// ---Opening and Closing Modal - ---
 
 function openModal(modal) {
     modal.classList.remove('hidden');
@@ -182,7 +217,7 @@ document.querySelectorAll('.close-modal').forEach(btn => {
     });
 });
 
-// Decrypt Modal
+//  decrypting the Modal view
 function openDecryptModal(note) {
     currentNote = note;
     decryptNoteTitle.textContent = `Decrypting: ${note.title}`;
@@ -200,7 +235,7 @@ confirmDecrypt.addEventListener('click', async () => {
     try {
         const plainText = await decryptData(currentNote, decryptionPassword);
         closeModal(decryptModal);
-        openViewModal(currentNote, plainText);
+        openViewModal(currentNote, plainText, decryptionPassword);
     } catch (err) {
         showToast("Access Denied: Wrong Passphrase", "error");
         console.error(err);
@@ -209,17 +244,61 @@ confirmDecrypt.addEventListener('click', async () => {
     }
 });
 
-// View Modal
-function openViewModal(note, content) {
+// View the Note
+function openViewModal(note, content, passphrase) {
     viewTitle.textContent = note.title;
-    viewBody.textContent = content; // Textarea-like display
+    const cleanHTML = DOMPurify.sanitize(content);
+    viewBody.innerHTML = cleanHTML;
 
-    viewTags.innerHTML = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    const tagHtml = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    viewTags.innerHTML = tagHtml ? `<span style="color:var(--text-muted); margin-right:8px; font-size:14px;">Tags:</span>${tagHtml}` : '';
+
+    // Edit Button based on if the user is owner or has been granted the permission
+    if (note.isOwner || note.permission === 'read-write') {
+        editBtn.style.display = "inline-block";
+        editBtn.onclick = () => {
+            sessionStorage.setItem(`session_note_data_${note.id}`, JSON.stringify({
+                content: content,
+                passphrase: passphrase
+            }));
+            window.location.href = `editor.html?id=${note.id}`;
+        };
+    } else {
+        editBtn.style.display = "none";
+    }
+
+    if (note.isOwner) {
+        deleteBtn.style.display = "inline-flex";
+        deleteBtn.onclick = () => {
+            showConfirmModal(
+                "Delete Note",
+                `Are you sure you want to delete the note "${note.title}"`,
+                "YES",
+                "NO",
+                async () => {
+                    try {
+                        await deleteDoc(doc(db, "notes", note.id));
+                        showToast("Note deleted successfully", "success");
+                        closeModal(confirmModal); 
+                        closeModal(viewModal);    
+                        loadNotes();              
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Failed to delete note", "error");
+                    }
+                },
+                () => {
+                   
+                }
+            );
+        };
+    } else {
+        deleteBtn.style.display = "none";
+    }
 
     if (note.isOwner) {
         shareBtnTrigger.style.display = "inline-block";
         shareBtnTrigger.onclick = () => {
-            // Stack modals? Or close view? Let's just open share on top
             openModal(shareModal);
         };
     } else {
@@ -231,16 +310,24 @@ function openViewModal(note, content) {
 
 // Share Modal
 confirmShare.addEventListener('click', async () => {
-    const email = shareEmailInput.value.trim();
-    if (!email) return;
+    const emailList = shareEmailInput.value.split(',').map(e => e.trim()).filter(Boolean);
+    const permission = sharePermission.value;
+
+    if (emailList.length === 0) return;
 
     confirmShare.textContent = "Sharing...";
 
     try {
-        await updateDoc(doc(db, "notes", currentNote.id), {
-            sharedWith: arrayUnion(email)
+        const updates = {
+            sharedWith: arrayUnion(...emailList)
+        };
+        // Add permission for each email
+        emailList.forEach(email => {
+            updates[`sharedPermissions.${email}`] = permission;
         });
-        showToast(`Access granted to ${email}`, "success");
+
+        await updateDoc(doc(db, "notes", currentNote.id), updates);
+        showToast(`Access granted to ${emailList.join(', ')}`, "success");
         closeModal(shareModal);
     } catch (err) {
         showToast("Error sharing: " + err.message, "error");
@@ -249,12 +336,11 @@ confirmShare.addEventListener('click', async () => {
     }
 });
 
-// --- Crypto Decryption (Mirror of Editor) ---
+// --- Decryption of note ---
 
 async function decryptData(noteData, passphrase) {
     const textEncoder = new TextEncoder();
 
-    // 1. Import Key (PBKDF2)
     const keyMaterial = await crypto.subtle.importKey(
         "raw",
         textEncoder.encode(passphrase),
@@ -263,12 +349,10 @@ async function decryptData(noteData, passphrase) {
         ["deriveKey"]
     );
 
-    // 2. Decode Base64 Metadata
     const salt = Uint8Array.from(atob(noteData.salt), c => c.charCodeAt(0));
     const iv = Uint8Array.from(atob(noteData.iv), c => c.charCodeAt(0));
     const ciphertext = Uint8Array.from(atob(noteData.encryptedBody), c => c.charCodeAt(0));
 
-    // 3. Derive Key
     const key = await crypto.subtle.deriveKey(
         {
             name: "PBKDF2",
@@ -282,7 +366,6 @@ async function decryptData(noteData, passphrase) {
         ["decrypt"]
     );
 
-    // 4. Decrypt
     const decrypted = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: iv },
         key,
