@@ -142,6 +142,8 @@ function renderNotes(notes) {
         card.className = 'note-card dashboard-card';
         card.dataset.id = note.id;
 
+        const tagHtml = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+
         card.innerHTML = `
             <div class="note-header">
                 <span class="note-title">${note.title || 'Untitled'}</span>
@@ -164,7 +166,6 @@ function renderNotes(notes) {
 
 
 
-// --- Generic Confirmation Modal ---
 function showConfirmModal(title, message, confirmText, cancelText, onConfirm, onCancel) {
     confirmTitle.textContent = title;
     confirmMessage.textContent = message;
@@ -279,16 +280,16 @@ function openViewModal(note, content, passphrase) {
                     try {
                         await deleteDoc(doc(db, "notes", note.id));
                         showToast("Note deleted successfully", "success");
-                        closeModal(confirmModal); 
-                        closeModal(viewModal);    
-                        loadNotes();              
+                        closeModal(confirmModal);
+                        closeModal(viewModal);
+                        loadNotes();
                     } catch (err) {
                         console.error(err);
                         showToast("Failed to delete note", "error");
                     }
                 },
                 () => {
-                   
+
                 }
             );
         };

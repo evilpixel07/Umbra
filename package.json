@@ -2,8 +2,9 @@
   "name": "umbra",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/js/notes.js",
   "scripts": {
+    "start": "serve src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/evilpixel07/Umbra#readme",
   "devDependencies": {
+    "serve": "^14.2.4",
     "webpack": "^5.103.0",
     "webpack-cli": "^6.0.1"
   }
