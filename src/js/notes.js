@@ -47,11 +47,24 @@ let currentNote = null;
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
+        updateUserProfile(user);
         loadNotes();
     } else {
         window.location.href = "login.html";
     }
 });
+
+function updateUserProfile(user) {
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    const userAvatar = document.getElementById('userAvatar');
+
+    if (userName) userName.textContent = user.displayName || "User";
+    if (userEmail) userEmail.textContent = user.email;
+    if (userAvatar) {
+        userAvatar.textContent = (user.displayName || user.email).charAt(0).toUpperCase();
+    }
+}
 
 createNewNoteButton.addEventListener('click', () => {
     window.location.href = "editor.html";
@@ -251,8 +264,8 @@ function openViewModal(note, content, passphrase) {
     const cleanHTML = DOMPurify.sanitize(content);
     viewBody.innerHTML = cleanHTML;
 
-    const tagHtml = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
-    viewTags.innerHTML = tagHtml ? `<span style="color:var(--text-muted); margin-right:8px; font-size:14px;">Tags:</span>${tagHtml}` : '';
+    const tagsHtml = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    viewTags.innerHTML = tagsHtml ? `<span style="color:var(--text-muted); margin-right:8px; font-size:14px;">Tags:</span>${tagsHtml}` : '';
 
     // Edit Button based on if the user is owner or has been granted the permission
     if (note.isOwner || note.permission === 'read-write') {
