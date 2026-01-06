@@ -368,22 +368,6 @@ body {
 }
 
 
-.login-page .ripple-circle {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  opacity: .22;
-  background: rgba(0, 0, 0, 0.18);
-  animation: rippleAnim 600ms ease-out;
-  pointer-events: none;
-}
-
-@keyframes rippleAnim {
-  to {
-    transform: scale(1.8);
-    opacity: 0;
-  }
-}
 
 
 .login-page .glass-box.shake {
@@ -1189,112 +1173,6 @@ body.notes-page .dashboard-card:hover .action-hint {
 
 /* ------------------------ Selection Mode UI ------------------------ */
 
-.selection-bar {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--glass-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  padding: 12px 24px;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  z-index: 100;
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translate(-50%, 100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translate(-50%, 0);
-    opacity: 1;
-  }
-}
-
-.selection-bar.hidden {
-  display: none;
-}
-
-.selection-info {
-  color: var(--text-main);
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.selection-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn.small {
-  padding: 8px 16px;
-  font-size: 13px;
-  border-radius: 20px;
-}
-
-.btn.danger {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.btn.danger:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-/* Checkboxes in Selection Mode */
-.note-select-checkbox {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 24px;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.note-select-checkbox.selected {
-  background: var(--primary);
-  border-color: var(--primary);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-}
-
-.note-select-checkbox.selected::after {
-  content: '✓';
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.note-card.selection-mode {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-.note-card.selection-mode.selected {
-  transform: scale(1);
-  opacity: 1;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-glow);
-}
 
 /* -------------------- Quill Editor Dark Mode -------------------- */
 

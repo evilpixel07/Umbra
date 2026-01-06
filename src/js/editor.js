@@ -30,7 +30,7 @@ var quill = new Quill('#editor-container', {
             ['bold', 'italic', 'underline', 'strike'],
             [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             [{ 'color': [] }, { 'background': [] }]
-            
+
         ]
     }
 });
@@ -118,28 +118,6 @@ function showToast(msg, type = 'info') {
 }
 
 // part of encrytption and decryption using crypto(PBKDF2 and SHA-256 and AES-GCM based)
-
-async function decryptData(noteData, passphrase) {
-    const textEncoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(passphrase), { name: "PBKDF2" }, false, ["deriveKey"]);
-
-    const salt = Uint8Array.from(atob(noteData.salt), c => c.charCodeAt(0));
-    const iv = Uint8Array.from(atob(noteData.iv), c => c.charCodeAt(0));
-    const ciphertext = Uint8Array.from(atob(noteData.encryptedBody), c => c.charCodeAt(0));
-
-    const key = await crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["decrypt"]
-    );
-
-    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
-    const decoded = new TextDecoder().decode(decrypted);
-
-    return decoded;
-}
 
 async function deriveKey(passphrase, salt) {
     const textEncoder = new TextEncoder();

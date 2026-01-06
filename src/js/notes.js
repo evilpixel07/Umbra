@@ -1,6 +1,6 @@
 import { auth, db } from "./config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { collection, query, where, getDocs, orderBy, updateDoc, doc, arrayUnion, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy, updateDoc, doc, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 
 const notesContainer = document.getElementById('notesContainer');
