@@ -9,6 +9,7 @@
 All encryption and decryption happens on the client side using the password created by the owner. 
 
 ## Table of Contents
+- [Problem Statement](#problem_statement)
 - [Project Overview](#project_overview)
 - [Features](#features)
 - [Tech Stack](#tech_stack)
@@ -18,6 +19,11 @@ All encryption and decryption happens on the client side using the password crea
 - [Services used](#services_used)
 - [Security](#security)
 - [Credits and Attributions](#credits_and_attributions)
+
+
+### Problem_Statement
+> Build a sharable personal note-taking web app where notes are written in rich-text options and stored encrypted such that only the note owner (and explicitly authorized    users) can read them. Implement client-side encryption so the server stores only ciphertext. Provide add/edit/delete, optional share-with-permission (read or read+write),   and a safe export/import mechanism.
+
 
 ### Project_Overview
 Umbra is designed for people who love privacy .
@@ -98,6 +104,7 @@ Video link: https://drive.google.com/drive/folders/1CKNyW4vnVPaBo3rAegCf9z27oAhd
 
 ### Credits_and_Attributions
 -  "**Antigravity IDE**" for code suggestions and some little fixes
+-  Google gemini for CSS Edit
 - [ChatGPT](chatgpt.com) for syntax and pattern of some code and other concepts of Encyption and Decryption and database funtions
 - config.js taekn from [Firebase](https://firebase.google.com/) as it is to use its features
   ```js
